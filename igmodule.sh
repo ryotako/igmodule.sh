@@ -82,18 +82,17 @@ EOS
 
   pack_procedures_recursive "$proc_path" > "$tmpfile"
 
-  rewrite_modulecall < "$tmpfile" 
-  
+  rewrite_modulecall < "$tmpfile"   
   
 }
 
 rewrite_modulecall(){
-  local module="${igmodule_modulelist[1]}"
+  local module="${igmodule_modulelist[0]}"
   igmodule_modulelist=("${igmodule_modulelist[@]:1}")
   if [ "${#igmodule_modulelist[@]}" -eq 0 ]; then
     cat -
   else
-    cat - | igmodule_sed "s/$module/$igmodule_module/g" | rewrite_modulecall
+    cat - | igmodule_sed "s/$module#/$igmodule_module#/g" | rewrite_modulecall
   fi
 }
 
@@ -131,7 +130,7 @@ pack_procedure(){
 //------------------------------------------------------------------------------
 // original file: $proc_name.ipf 
 //------------------------------------------------------------------------------
-#if !ItemsInList(WinList("$2.ipf",";",""))
+#if !ItemsInList(WinList("$proc_name.ipf",";",""))
 
 EOS
 
@@ -140,7 +139,7 @@ EOS
     | igmodule_sed '/^#pragma ModuleName/ s/^/\/\//' \
     | igmodule_sed 's/^constant /override constant /' \
     | igmodule_sed 's/^strconstant /override strconstant /' \
-    | igmodule_sed 's/^Function /override Function /' \
+    | igmodule_sed 's/^Function/override Function/' \
 
 cat <<EOS
 
@@ -163,12 +162,10 @@ while (( $# > 0 )); do
       usage_exit
       ;;
     --as)
-      echo "DONE" 1>&2
       igmodule_module="$2"
       shift 2
       ;;
     --include)
-      echo "DONE" 1>&2
       igmodule_args=("$(find_procedure $2 '')")
       shift 2
       ;;
