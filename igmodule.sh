@@ -179,7 +179,6 @@ while (( $# > 0 )); do
   esac
 done
 
-echo "ARGS:${igmodule_args[@]}" 1>&2
 argc="${#igmodule_args[@]}"
 if [ "$argc" -lt 1 ]; then
   echo "$igmodule_progname: too few arguments" 1>&2
