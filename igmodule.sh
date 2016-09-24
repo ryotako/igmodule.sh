@@ -22,7 +22,7 @@ igmodule_sed(){
   fi
 }
 
-contain(){ # 第一引数が，第二引数で与えられるリストに存在するかどうかを判定
+contain(){
   local elm="$1" 
   shift
   local array=($@)
@@ -36,9 +36,7 @@ contain(){ # 第一引数が，第二引数で与えられるリストに存在�
   return 1
 }
 
-# User Proceduresフォルダを探す
-# ユーザーがUser Proceduresフォルダの位置を変更している場合は，
-# 環境変数IGORPATHで指定する．
+# Find User Procedures
 user_proc_dir(){
   if [ -n $"IGORPATH" ];then
     echo $IGORPATH
@@ -48,29 +46,27 @@ user_proc_dir(){
   fi
 }
 
-# プロシージャ名を受け取ってそのパスを返す．
-# 第一引数にプロシージャ名，第二引数に呼び出し元のファイルパスを渡す．
+# Find a procedure
 find_procedure(){
   proc_name="$1"
   file_path="$2"
 
-  # Igorの:区切りのパスを/区切りのパスに変換する関数をローカルに定義
+  # Change : into / in an igor-path
   convert_igorpath(){
     echo "$1.ipf" | sed -e 's/^Macintosh HD://' -e 's/^[^\/]/\//' | tr ':' '/' 
   }
 
-  if [[ "$proc_name" =~ ^: ]]; then # 絶対パス
+  if [[ "$proc_name" =~ ^: ]]; then # Absolute path
     echo $(dirname "$file_path")$(convert_igorpath "$proc_name")
-  elif [[ "$proc_name" =~ : ]]; then # 相対パス
+  elif [[ "$proc_name" =~ : ]]; then # Relative path
     convert_igorpath "$proc_name"
-  else # ファイル名のみ
+  else # File name only
     find "$(user_proc_dir)/User Procedures" -type f -name "$proc_name.ipf" \
       | head -n 1 
   fi
 }
 
-# 第一引数にファイルパス，第二引数に読み込み済みのプロシージャ名を受け取り，
-# 加工済みのテキストを返す
+# Return packaged text
 pack_procedures(){
   local proc_path="$1"
   local proc_name=$(basename "$1" .ipf)
@@ -102,9 +98,7 @@ rewrite_modulecall(){
 }
 
 
-# 再帰的に#includeをたどる機構．
-# 各ファイルの読み出しそのものはpack_procedureで行う．
-# 同名のファイルを二度呼び出さないために，グローバルな配列を使用．
+# Search included files recursively
 pack_procedures_recursive(){
   local proc_path="$1"
   local proc_name=$(basename "$1" .ipf)
@@ -128,10 +122,8 @@ pack_procedures_recursive(){
   done < <(egrep '^#include +"[^"]+"' "$proc_path")
 }
 
-# プロシージャをまとめられる形式に変更
-# - #includeプラグマをコメントアウト
-# - モジュール・独立モジュール宣言のコメントアウト
-# TODO menus=1
+# Rewrite an included file
+# TODO include option, menus=0
 pack_procedure(){
   local proc_path="$1"
   local proc_name=$(basename "$1" .ipf)
@@ -158,13 +150,13 @@ EOS
 }
 
 
-# ヘルプを示して終了
+# Show help and exit
 usage_exit(){
-  echo "Usage: $(basename $0) [--as module] [-h]" 1>&2
+  echo "Usage: $(basename $0) [--as module] [--include proc]" 1>&2
   exit 1
 }
 
-# オプション解析
+# Parse options
 while (( $# > 0 )); do
   case $1 in
     --help)
@@ -196,5 +188,4 @@ elif [ "$argc" -gt 1 ]; then
 else
   pack_procedures "${igmodule_args[0]}"
 fi
-
 
