@@ -273,7 +273,7 @@ function pack_procedures(){
   fi
   cat << EOS
 //------------------------------------------------------------------------------
-// This procedure file is packaged by $igmodule_progname
+// This procedure file is packaged by $PROGNAME
 // $(LANG=en_US.UTF-8 date '+%a,%d %b %Y')
 //------------------------------------------------------------------------------
 #pragma ModuleName=$module_name
