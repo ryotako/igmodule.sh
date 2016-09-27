@@ -88,14 +88,14 @@ function find_procedure(){
 while (( $# > 0 ))
 do
   case "$1" in
-    --help )
+    -h | --help )
       usage_exit
       ;;
-    --as )
+    -a | --as )
       OPT_AS="$2"
       shift
       ;;
-    --include )
+    -i | --include )
       OPT_INCLUDE=1
       ARGS+=$(find_procedure "$2")
       shift
@@ -104,7 +104,7 @@ do
       user_procedures
       exit 0
       ;;
-    --* )
+    -* | --* )
       error "$PROGNAME: illegal option $1"
       exit 1
       ;;
