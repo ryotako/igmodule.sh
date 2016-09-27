@@ -22,14 +22,14 @@ function usage_exit(){
 Usage: $PROGNAME [options] [file path]
 
 Options:
-  --help     show this help message and exit
-  --path     show the path of your 'User Procedures' directory
+  -h, --help     show this help message and exit
+  --path         show the path of your 'User Procedures' directory
 
-  --as       module name of packaged file
-  --include  You can select a target file as #include style.
+  -a, --as       module name of packaged file
+  -i, --include  a target file as #include style
 
 Environment variables:
-  IGORPATH   path of your 'Igor Pro User Files' directory
+  IGORPATH       'Igor Pro User Files' directory
 EOS
   exit 0
 }
