@@ -70,7 +70,7 @@ function find_procedure(){
   local root_file="$2"
 
   function convert_igorpath(){
-    echo "$1.ipf" | sed -E \
+    sed <<< "$1.ipf" -E \
       -e 's/^Macintosh HD:/\//' \
       -e 's/::/:\.\.:/g' \
       -e 's/:/\//g'
@@ -152,15 +152,15 @@ function contains(){
 function ignorecase_pattern(){
   local pattern="$1"
   if [ -n "$pattern" ]; then
-    local char=$(echo "$pattern" | cut -c 1)
-    local chars=$(echo "$pattern" | cut -c 2-)
+    local char=$(cut -c 1 <<< "$pattern")
+    local chars=$(cut -c 2- <<< "$pattern")
     if [[ $char =~ [a-z] ]];then
-      local upper=$(echo "$char" \
-        | sed 'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/')
+      local upper=$(sed <<< "$char" \
+        'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/')
       local head="[$char$upper]"
     elif [[ "$char" =~ [A-Z] ]];then
-      local lower=$(echo "$char" \
-        | sed 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
+      local lower=$(sed <<< "$char" \
+        'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
       local head="[$lower$char]"
     else
       local head="$char"
@@ -246,7 +246,7 @@ function pack_procedures_recursive(){
   local pragma=''
   while read pragma
   do
-    local included_proc=$(echo "$pragma" | sed -E 's/^[^"]+"([^"]+)".*$/\1/')
+    local included_proc=$(sed <<< "$pragma" -E 's/^[^"]+"([^"]+)".*$/\1/')
     local included_path=$(find_procedure "$included_proc" "$proc_path")
     if [ -f "$included_path" ]; then
       pack_procedures_recursive "$included_path" "$module_name"
