@@ -80,7 +80,7 @@ function find_procedure(){
   elif [[ "$proc_name" =~ : ]]; then # Absolute path
     echo $(convert_igorpath "$proc_name")
   else # Procedure name only
-    find "$(user_procedures)" -type f -name "$proc_name.ipf" | head -n 1
+    find "$(user_procedures)" -type f -iname "$proc_name.ipf" | head -n 1
   fi
 }
 
