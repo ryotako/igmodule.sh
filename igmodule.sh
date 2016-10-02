@@ -172,9 +172,9 @@ function ignorecase_pattern(){
 
 REGEXP_INCLUDE=$(ignorecase_pattern '^#include +')
 REGEXP_MUDULE_NAME=$(ignorecase_pattern '^#pragma ModuleName')
-REGEXP_CONSTANT=$(ignorecase_pattern '^(constnat) ')
-REGEXP_STRCONSTANT=$(ignorecase_pattern '^(strconstnat) ')
-REGEXP_FUNCTION=$(ignorecase_pattern '^(Function) ')
+REGEXP_CONSTANT=$(ignorecase_pattern '^(constant)')
+REGEXP_STRCONSTANT=$(ignorecase_pattern '^(strconstant)')
+REGEXP_FUNCTION=$(ignorecase_pattern '^(function)')
 
 # Rewrite procedure file
 function rewrite_procedure(){
@@ -195,9 +195,9 @@ EOS
   cat "$proc_path" | sed -E \
     -e "/$REGEXP_INCLUDE/ s/^/\/\//" \
     -e "/$REGEXP_MUDULE_NAME/ s/^/\/\//" \
-    -e "s/$REGEXP_CONSTANT/override \1 /" \
-    -e "s/$REGEXP_STRCONSTANT /override \1 /" \
-    -e "s/$REGEXP_FUNCTION/override \1 /" \
+    -e "s/$REGEXP_CONSTANT/override \1/" \
+    -e "s/$REGEXP_STRCONSTANT/override \1/" \
+    -e "s/$REGEXP_FUNCTION/override \1/" \
 
   # tail
 cat <<EOS
