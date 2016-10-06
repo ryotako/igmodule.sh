@@ -1,5 +1,5 @@
 #!/bin/bash
-PROGNAME=$(basename "$0")
+PROGNAME="igmodule"
 
 # Create and kill a temporary file
 function atexit() {
