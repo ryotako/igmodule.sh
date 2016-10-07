@@ -23,7 +23,6 @@ Usage: $PROGNAME [options] [file path]
 
 Options:
   -h, --help     show this help message and exit
-  --path         show the path of your 'User Procedures' directory
 
   -a, --as       module name of packaged file
   -i, --include  a target file as #include style
@@ -100,9 +99,6 @@ do
       ARGS+=$(find_procedure "$2")
       shift
       ;;
-    --path )
-      user_procedures
-      exit 0
       ;;
     -* | --* )
       error "$PROGNAME: illegal option $1"
