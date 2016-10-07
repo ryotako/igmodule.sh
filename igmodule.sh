@@ -143,34 +143,32 @@ function contains(){
   return 1
 }
 
-# convert: Case? -> [Ca][Aa][Ss][Ee]?
-# BSD sed cannot ignore cases :(
-function ignorecase_pattern(){
+function gsub(){
   local pattern="$1"
-  if [ -n "$pattern" ]; then
-    local char=$(cut -c 1 <<< "$pattern")
-    local chars=$(cut -c 2- <<< "$pattern")
-    if [[ $char =~ [a-z] ]];then
-      local upper=$(sed <<< "$char" \
-        'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/')
-      local head="[$char$upper]"
-    elif [[ "$char" =~ [A-Z] ]];then
-      local lower=$(sed <<< "$char" \
-        'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
-      local head="[$lower$char]"
-    else
-      local head="$char"
-    fi
-    local tail=$(ignorecase_pattern "$chars")
-    echo "$head$tail"
+  local replace="$2"
+  if [ -x "$(which gsed)" ]; then
+    cat - | gsed -E "s/$pattern/$replace/ig"
+  else
+    local ignorecase_pattern
+    while [ -n "$pattern"  ]
+    do
+      local char="${pattern:0:1}"
+      pattern="${pattern:1}"
+      if [[ $char =~ [a-z] ]];then
+        local upper=$(sed <<< "$char" \
+          'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/')
+        ignorecase_pattern+="[$char$upper]"
+      elif [[ "$char" =~ [A-Z] ]];then
+        local lower=$(sed <<< "$char" \
+          'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
+        ignorecase_pattern+="[$lower$char]"
+      else
+        ignorecase_pattern+="$char"
+      fi
+    done
+    cat - | sed -E "s/$ignorecase_pattern/$replace/g"
   fi
 }
-
-REGEXP_INCLUDE=$(ignorecase_pattern '^#include +')
-REGEXP_MUDULE_NAME=$(ignorecase_pattern '^#pragma ModuleName')
-REGEXP_CONSTANT=$(ignorecase_pattern '^(constant)')
-REGEXP_STRCONSTANT=$(ignorecase_pattern '^(strconstant)')
-REGEXP_FUNCTION=$(ignorecase_pattern '^(function)')
 
 # Rewrite procedure file
 function rewrite_procedure(){
@@ -188,12 +186,12 @@ function rewrite_procedure(){
 
 EOS
   # body
-  cat "$proc_path" | sed -E \
-    -e "/$REGEXP_INCLUDE/ s/^/\/\//" \
-    -e "/$REGEXP_MUDULE_NAME/ s/^/\/\//" \
-    -e "s/$REGEXP_CONSTANT/override \1/" \
-    -e "s/$REGEXP_STRCONSTANT/override \1/" \
-    -e "s/$REGEXP_FUNCTION/override \1/" \
+  cat "$proc_path" \
+    | gsub "^(#include )" "\/\/\1" \
+    | gsub "^(#pragma ModuleName)" "\/\/\1" \
+    | gsub "^(constant)" "override \1" \
+    | gsub "^(strconstant)" "override \1" \
+    | gsub "^(function)" "override \1" 
 
   # tail
 cat <<EOS
@@ -211,10 +209,8 @@ function rewrite_modulecall(){
   if [ "${#included_modules[@]}" -lt 1 ]; then
     cat -
   else
-    local pattern=$(ignorecase_pattern "${included_modules[0]}")
-    included_modules=("${included_modules[@]:1}")
-    cat - | sed -E "s/$pattern#/$module_name#/g" \
-      | rewrite_modulecall "$module_name" "${included_modules[@]}"
+    cat - | gsub "${included_modules[0]}#" "${module_name}#" \
+      | rewrite_modulecall "$module_name" "${included_modules[@]:1}"
   fi
 }
 
