@@ -99,6 +99,9 @@ do
       ARGS+=$(find_procedure "$2")
       shift
       ;;
+    -e | --exclude )
+      OPT_EXCLUDE+=("$2")
+      shift
       ;;
     -* | --* )
       error "$PROGNAME: illegal option $1"
@@ -221,6 +224,8 @@ function pack_procedures_recursive(){
 
   local proc_name=$(basename "$proc_path" .ipf)
   if contains "$proc_name" "${included_procs[@]}" ; then
+    return 0
+  elif contains "$proc_name" "${OPT_EXCLUDE[@]}" ; then
     return 0
   fi
   rewrite_procedure "$proc_path" "$module_name"
